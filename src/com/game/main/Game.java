@@ -21,17 +21,17 @@ public class Game extends Canvas implements Runnable {
     private Thread thread;
 
     public Game() {
-        initialize();
+
     }
 
     public static void main(String[] args) {
         Game game = new Game();
+        game.initialize();
+        game.start();
     }
 
     private void initialize() {
-        new Window(this.WINDOW_WIDTH, this.WINDOW_HEIGHT, this.TITLE, this);
-
-        start();
+        new Window(Game.WINDOW_WIDTH, Game.WINDOW_HEIGHT, Game.TITLE, this);
     }
 
     private synchronized void start() {
@@ -44,8 +44,8 @@ public class Game extends Canvas implements Runnable {
     private synchronized void stop() {
         if (!running) return;
         try {
-            this.thread.join();
             this.running = false;
+            this.thread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -106,6 +106,7 @@ public class Game extends Canvas implements Runnable {
 
         if (buffer == null) {
             this.createBufferStrategy(3);
+            return;
         }
 
         //Draw graphics
