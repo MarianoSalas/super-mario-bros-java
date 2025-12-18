@@ -6,21 +6,24 @@ import javax.swing.JFrame;
 import java.awt.Dimension;
 
 public class Window {
-    private JFrame frame;
-    private Dimension size;
 
     public Window(int width, int height, String title, Game game) {
-        this.size = new Dimension(width, height);
-        this.frame = new JFrame(title);
+        Dimension gameSize = new Dimension(width, height);
+        game.setPreferredSize(gameSize);
+        game.setMaximumSize(gameSize);
+        game.setMinimumSize(gameSize);
 
-        this.frame.setPreferredSize(this.size);
-        this.frame.setMaximumSize(this.size);
-        this.frame.setMinimumSize(this.size);
+        JFrame frame = new JFrame(title);
 
-        this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.frame.setResizable(false);
-        this.frame.setLocationRelativeTo(null);
-        this.frame.add(game);
-        this.frame.setVisible(true);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setResizable(false);
+        //First add the game to the frame, then pack it to fit the preferred size
+        frame.add(game);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+
+        //Optionally, request focus for the game canvas
+        game.requestFocus();
     }
 }
