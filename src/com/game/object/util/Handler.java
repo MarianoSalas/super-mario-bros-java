@@ -21,7 +21,7 @@ public class Handler {
          * We iterate backwards to safely remove objects without skipping elements.
          * If we remove an object at index 'i', the elements shift left,
          * but since we are going to 'i-1', the shift doesn't affect the next step. */
-        for (int i = gameObjects.size() - 1; i >= 0; i++) {
+        for (int i = gameObjects.size() - 1; i >= 0; i--) {
             GameObject tempObj = gameObjects.get(i);
             tempObj.tick();
         }

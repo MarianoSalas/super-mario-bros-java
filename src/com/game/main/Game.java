@@ -1,17 +1,18 @@
 package com.game.main;
 
+import com.game.core.ShutdownHandler;
 import com.game.graphics.Window;
 import com.game.object.util.Handler;
 
 import java.awt.*;
 import java.awt.image.BufferStrategy;
 
-public class Game extends Canvas implements Runnable {
+public class Game extends Canvas implements Runnable, ShutdownHandler {
 
     //Game Constants
     private static final int MILLIS_PER_SECOND = 1_000;
     private static final int NANOS_PER_SECOND = 1_000_000_000;
-    private static final double NUM_TICKS = 60.0;
+    private static final int NUM_TICKS = 60;
     private static final String TITLE = "Super Mario Bros";
 
     public static final int WINDOW_WIDTH = 960;
@@ -25,25 +26,20 @@ public class Game extends Canvas implements Runnable {
     private Handler handler;
 
     public Game() {
-
+        this.handler = new Handler();
     }
 
     public static void main(String[] args) {
         Game game = new Game();
-        game.initialize();
 
-        new Window(Game.WINDOW_WIDTH, Game.WINDOW_HEIGHT, Game.TITLE, game);
+        new Window(Game.WINDOW_WIDTH, Game.WINDOW_HEIGHT, Game.TITLE, game, game);
 
         game.start();
     }
 
-    private void initialize() {
-        this.handler = new Handler();
-    }
-
     private synchronized void start() {
         if (running) return; // Prevención extra por si se llama dos veces
-        this.thread = new Thread(this);
+        this.thread = new Thread(this, "Game-Thread");
         this.running = true;
         this.thread.start();
     }
@@ -61,7 +57,7 @@ public class Game extends Canvas implements Runnable {
     @Override
     public void run() {
         long lastTime = System.nanoTime();
-        double nsPerTick = NANOS_PER_SECOND / NUM_TICKS;
+        double nsPerTick = NANOS_PER_SECOND / (double) NUM_TICKS;
         double delta = 0;
 
         long timer = System.currentTimeMillis();
@@ -101,7 +97,6 @@ public class Game extends Canvas implements Runnable {
                 updates = 0;
             }
         }
-        stop();
     }
 
     private void tick() {
@@ -126,5 +121,10 @@ public class Game extends Canvas implements Runnable {
         //Clean for next frame
         g.dispose();
         buffer.show();
+    }
+
+    @Override
+    public void onShutdown() {
+        stop();
     }
 }
