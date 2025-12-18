@@ -1,8 +1,9 @@
 package com.game.main;
 
 import com.game.graphics.Window;
+import com.game.object.util.Handler;
 
-import java.awt.Canvas;
+import java.awt.*;
 import java.awt.image.BufferStrategy;
 
 public class Game extends Canvas implements Runnable {
@@ -13,12 +14,15 @@ public class Game extends Canvas implements Runnable {
     private static final double NUM_TICKS = 60.0;
     private static final String TITLE = "Super Mario Bros";
 
-    private static final int WINDOW_WIDTH = 960;
-    private static final int WINDOW_HEIGHT = 720;
+    public static final int WINDOW_WIDTH = 960;
+    public static final int WINDOW_HEIGHT = 720;
+
     //Game Variables
     private volatile boolean running;
+
     //Game Components
     private Thread thread;
+    private Handler handler;
 
     public Game() {
 
@@ -27,11 +31,14 @@ public class Game extends Canvas implements Runnable {
     public static void main(String[] args) {
         Game game = new Game();
         game.initialize();
+
+        new Window(Game.WINDOW_WIDTH, Game.WINDOW_HEIGHT, Game.TITLE, game);
+
         game.start();
     }
 
     private void initialize() {
-        new Window(Game.WINDOW_WIDTH, Game.WINDOW_HEIGHT, Game.TITLE, this);
+        this.handler = new Handler();
     }
 
     private synchronized void start() {
@@ -98,7 +105,7 @@ public class Game extends Canvas implements Runnable {
     }
 
     private void tick() {
-
+        this.handler.tick();
     }
 
     private void render() {
@@ -109,7 +116,15 @@ public class Game extends Canvas implements Runnable {
             return;
         }
 
-        //Draw graphics
+        //Draw g
+        Graphics g = buffer.getDrawGraphics();
+        g.setColor(Color.BLACK);
+        g.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
+        this.handler.render(g);
+
+        //Clean for next frame
+        g.dispose();
+        buffer.show();
     }
 }
