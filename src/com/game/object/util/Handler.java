@@ -1,15 +1,19 @@
 package com.game.object.util;
 
 import com.game.object.GameObject;
+import com.game.object.Player;
 
 import java.awt.Graphics;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Handler {
 
-    //Use ArrayList because of Data Locality (better cache performance)
+    // Use ArrayList because of Data Locality (better cache performance)
     private final List<GameObject> gameObjects;
+    // We store a specific reference to Player to avoid O(n) searches during input/camera logic.
+    private Player player;
 
     public Handler() {
         this.gameObjects = new ArrayList<>();
@@ -43,5 +47,46 @@ public class Handler {
 
     public void removeObject(GameObject obj) {
         this.gameObjects.remove(obj);
+
+        // Safety check: If we are removing the object that happens to be the player,
+        // we must also nullify the direct reference to avoid keeping a "ghost" player.
+        if (this.player == obj) {
+            this.player = null;
+        }
+    }
+
+    public List<GameObject> getGameObjects() { return this.gameObjects; }
+
+    public boolean setPlayer(Player player) {
+        boolean toReturn;
+
+        if (this.player != null) {
+            toReturn = false;
+        }
+        else {
+            addObject(player);
+            this.player = player;
+            toReturn = true;
+        }
+
+        return toReturn;
+    }
+
+    public boolean removePlayer() {
+         boolean toReturn;
+
+        if (this.player == null) {
+            toReturn = false;
+        }
+        else {
+            removeObject(this.player);
+            this.player = null;
+            toReturn = true;
+        }
+        return toReturn;
+    }
+
+    public Player getPlayer() {
+        return this.player;
     }
 }

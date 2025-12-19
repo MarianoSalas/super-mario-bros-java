@@ -3,6 +3,7 @@ package com.game.graphics;
 import com.game.core.ShutdownHandler;
 
 import javax.swing.JFrame;
+
 import java.awt.Canvas;
 import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
@@ -35,7 +36,6 @@ public class Window {
                 System.out.println("Window is closing. Performing shutdown tasks...");
                 shutdownHandler.onShutdown(); // Stop game thread
                 frame.dispose(); // Kill window
-                System.exit(0); // Force kill JVM (optional but ensures full cleanup)
             }
         });
     }

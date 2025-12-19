@@ -2,9 +2,12 @@ package com.game.main;
 
 import com.game.core.ShutdownHandler;
 import com.game.graphics.Window;
+import com.game.object.Player;
 import com.game.object.util.Handler;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Canvas;
 import java.awt.image.BufferStrategy;
 
 public class Game extends Canvas implements Runnable, ShutdownHandler {
@@ -23,10 +26,12 @@ public class Game extends Canvas implements Runnable, ShutdownHandler {
 
     //Game Components
     private Thread thread;
-    private Handler handler;
+    private final Handler handler;
 
     public Game() {
         this.handler = new Handler();
+        // Agregamos al jugador en la posición 100, 100 con escala 1.
+        this.handler.addObject(new Player(100, 100, 1, this.handler));
     }
 
     public static void main(String[] args) {
@@ -50,7 +55,7 @@ public class Game extends Canvas implements Runnable, ShutdownHandler {
             this.running = false;
             this.thread.join();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -77,6 +82,7 @@ public class Game extends Canvas implements Runnable, ShutdownHandler {
                 delta--;
                 shouldRender = true;
             }
+
             if (this.running && shouldRender) {
                 render();
                 frames++;
@@ -90,7 +96,7 @@ public class Game extends Canvas implements Runnable, ShutdownHandler {
                 }
             }
 
-            if (System.currentTimeMillis() - timer > MILLIS_PER_SECOND) {
+            if (System.currentTimeMillis() - timer >= MILLIS_PER_SECOND) {
                 timer += MILLIS_PER_SECOND;
                 System.out.println("FPS: " + frames + " | TPS: " + updates);
                 frames = 0;
