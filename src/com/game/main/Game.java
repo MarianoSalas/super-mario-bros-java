@@ -2,8 +2,10 @@ package com.game.main;
 
 import com.game.core.ShutdownHandler;
 import com.game.graphics.Window;
+import com.game.object.Block;
 import com.game.object.Player;
 import com.game.object.util.Handler;
+import com.game.object.util.KeyInput;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -23,6 +25,7 @@ public class Game extends Canvas implements Runnable, ShutdownHandler {
 
     //Game Variables
     private volatile boolean running;
+    private int currentFPS = 0;
 
     //Game Components
     private Thread thread;
@@ -30,8 +33,24 @@ public class Game extends Canvas implements Runnable, ShutdownHandler {
 
     public Game() {
         this.handler = new Handler();
-        // Agregamos al jugador en la posición 100, 100 con escala 1.
-        this.handler.addObject(new Player(100, 100, 1, this.handler));
+        this.addKeyListener(new KeyInput(this.handler));
+
+        // We create a row of blocks at Y = 500
+        // 32 pixels wide * 20 blocks = 640 pixels of floor
+        for (int i = 0; i < 30; i++) {
+            this.handler.addObject(new Block(i * 32, 500, 32, 32, 1));
+        }
+        // Create a floating platform to test Jumping logic
+        this.handler.addObject(new Block(300, 400, 32, 32, 1));
+        this.handler.addObject(new Block(332, 400, 32, 32, 1));
+        this.handler.addObject(new Block(364, 400, 32, 32, 1));
+
+        // Create a wall to test Side Collision
+        this.handler.addObject(new Block(600, 468, 32, 32, 1));
+        this.handler.addObject(new Block(600, 436, 32, 32, 1));
+
+        // Add Player AFTER blocks so he is rendered in front of them
+        this.handler.addObject(new Player(100, 100, 2, this.handler));
     }
 
     public static void main(String[] args) {
@@ -43,7 +62,7 @@ public class Game extends Canvas implements Runnable, ShutdownHandler {
     }
 
     private synchronized void start() {
-        if (running) return; // Prevención extra por si se llama dos veces
+        if (running) return; // Extra prevention in case of multiple calls.
         this.thread = new Thread(this, "Game-Thread");
         this.running = true;
         this.thread.start();
@@ -97,6 +116,7 @@ public class Game extends Canvas implements Runnable, ShutdownHandler {
             }
 
             if (System.currentTimeMillis() - timer >= MILLIS_PER_SECOND) {
+                this.currentFPS = frames;
                 timer += MILLIS_PER_SECOND;
                 System.out.println("FPS: " + frames + " | TPS: " + updates);
                 frames = 0;
@@ -123,10 +143,20 @@ public class Game extends Canvas implements Runnable, ShutdownHandler {
         g.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
         this.handler.render(g);
-
+        drawFPS(g);
         //Clean for next frame
         g.dispose();
         buffer.show();
+    }
+
+    private void drawFPS(Graphics g) {
+        // OPTIMIZACIÓN VISUAL: "Sombra" negra para que se lea sobre fondo blanco
+        g.setColor(Color.BLACK);
+        g.drawString("FPS: " + currentFPS, 11, 21); // Un pixel desplazado
+
+        // Texto principal (verde flúo o blanco para contraste)
+        g.setColor(Color.GREEN);
+        g.drawString("FPS: " + currentFPS, 10, 20);
     }
 
     @Override

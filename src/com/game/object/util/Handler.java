@@ -43,6 +43,11 @@ public class Handler {
 
     public void addObject(GameObject obj) {
         this.gameObjects.add(obj);
+
+        // CORRECCIÓN: Si el objeto es un Player, guardamos la referencia rápida.
+        if (obj.getID() == ObjectID.PLAYER) {
+            this.player = (Player) obj;
+        }
     }
 
     public void removeObject(GameObject obj) {

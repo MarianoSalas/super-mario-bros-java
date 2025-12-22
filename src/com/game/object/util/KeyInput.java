@@ -31,12 +31,14 @@ public class KeyInput extends KeyAdapter {
         if (player == null) return;
 
         if (key == KeyEvent.VK_W || key == KeyEvent.VK_UP) {
-            /* Jump logic is instantaneous, we don't need to store it in the array necessarily,
-             * unless we want variable jump height later.
-             * For now, we apply velocity directly.
-             * Check: Only jump if we are not already falling (simple check, improve later with collision flags). */
-            if (player.getVelY() == 0) {
-                player.setVelY(-15);
+            /* Robust logic:
+             * Only jump if we are NOT already jumping (prevents double jumps)
+             * and if we are NOT falling (prevents mid-air jumps if falling off a ledge) */
+            // Optimization: Single check replaces multiple boolean getters.
+            // "If state is 0 (0000), it means we are strictly on the ground"
+            if (player.isGrounded()) {
+                player.setJumping(true);
+                player.setVelY(-8);
                 keyDown[0] = true;
             }
         }
@@ -66,7 +68,15 @@ public class KeyInput extends KeyAdapter {
 
         if (player == null) return;
 
-        if (key == KeyEvent.VK_W || key == KeyEvent.VK_UP) { keyDown[0] = false; }
+        if (key == KeyEvent.VK_W || key == KeyEvent.VK_UP) {
+            keyDown[0] = false;
+            /* GAMEPLAY MECHANIC: Variable Jump Height
+             * If the player releases the jump button while still moving up,
+             * we cut the upward velocity significantly to create a "short hop". */
+            if (player.getVelY() < 0) {
+                player.setVelY(player.getVelY() / 2);
+            }
+        }
 
         if (key == KeyEvent.VK_A || key == KeyEvent.VK_LEFT) {
             keyDown[1] = false;
