@@ -41,9 +41,9 @@ public class Game extends Canvas implements Runnable, ShutdownHandler {
             this.handler.addObject(new Block(i * 32, 500, 32, 32, 1));
         }
         // Create a floating platform to test Jumping logic
-        this.handler.addObject(new Block(300, 400, 32, 32, 1));
-        this.handler.addObject(new Block(332, 400, 32, 32, 1));
-        this.handler.addObject(new Block(364, 400, 32, 32, 1));
+        this.handler.addObject(new Block(300, 355, 32, 32, 1));
+        this.handler.addObject(new Block(332, 355, 32, 32, 1));
+        this.handler.addObject(new Block(364, 355, 32, 32, 1));
 
         // Create a wall to test Side Collision
         this.handler.addObject(new Block(600, 468, 32, 32, 1));

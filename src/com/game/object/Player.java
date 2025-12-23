@@ -41,15 +41,14 @@ public class Player extends GameObject {
 
     @Override
     public void tick() {
-        // Apply movement.
         this.x += this.velX;
+        collisionX();
+
         this.y += this.velY;
-        // Apply gravity.
         applyGravity(0.3f);
-        // Update collision bounds.
+        collisionY();
+
         updateBounds();
-        // Handle collisions.
-        collision();
     }
 
     @Override
@@ -62,21 +61,10 @@ public class Player extends GameObject {
     }
 
     @Override
-    public Rectangle getBounds() {
-        return this.bounds;
-    }
-
-    public Rectangle getBoundsTop() {
-        return this.boundsTop;
-    }
-
-    public Rectangle getBoundsLeft() {
-        return this.boundsLeft;
-    }
-
-    public Rectangle getBoundsRight() {
-        return this.boundsRight;
-    }
+    public Rectangle getBounds() { return this.bounds; }
+    public Rectangle getBoundsTop() { return this.boundsTop; }
+    public Rectangle getBoundsLeft() { return this.boundsLeft; }
+    public Rectangle getBoundsRight() { return this.boundsRight; }
 
     private void showBounds(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
@@ -126,36 +114,58 @@ public class Player extends GameObject {
         return (stateFlags & (STATE_JUMPING | STATE_FALLING)) == 0;
     }
 
-    private void collision() {
-        List<GameObject> gameObjectList = this.handler.getGameObjects();
-        int gameObjectCount = gameObjectList.size();
+    private void collisionX() {
+        // Sync bounds with the recent X movement.
+        updateBounds();
 
-        for (int i = 0; i < gameObjectCount; i++) {
-            GameObject tempObject = gameObjectList.get(i);
+        List<GameObject> objectList = this.handler.getGameObjects();
+        int objectCount = objectList.size();
+
+        for (int i = 0; i < objectCount; i++) {
+            GameObject tempObject = objectList.get(i);
 
             if (tempObject.id == ObjectID.BLOCK || tempObject.id == ObjectID.PIPE) {
-                if (this.bounds.intersects(tempObject.bounds)) {
-                    this.y = tempObject.y - this.height;
-                    this.velY = 0;
-                    this.stateFlags &= ~(STATE_JUMPING | STATE_FALLING); // Clear jumping and falling states.
-                    updateBounds();
-                    continue;
-                }
-
-                if (this.boundsTop.intersects(tempObject.bounds)) {
-                    this.y = tempObject.y + this.height;
-                    this.velY = 0;
-                    updateBounds();
-                    continue;
-                }
-
+                // Right collision
                 if (this.boundsRight.intersects(tempObject.bounds)) {
                     this.x = tempObject.x - this.width;
                     updateBounds();
                 }
 
+                // Left collision
                 if (this.boundsLeft.intersects(tempObject.bounds)) {
                     this.x = tempObject.x + tempObject.width;
+                    updateBounds();
+                }
+            }
+        }
+    }
+
+    private void collisionY() {
+        // Sync bounds with the recent Y movement.
+        updateBounds();
+
+        List<GameObject> objectList = this.handler.getGameObjects();
+        int objectCount = objectList.size();
+
+        for (int i = 0; i < objectCount; i++) {
+            GameObject tempObject = objectList.get(i);
+
+            if (tempObject.id == ObjectID.BLOCK || tempObject.id == ObjectID.PIPE) {
+                // Feet collision (landing).
+                if (this.bounds.intersects(tempObject.bounds)) {
+                    // Check if we are actually coming from above.
+                    if (this.velY >= 0) {
+                        this.y = tempObject.y - this.height;
+                        this.velY = 0;
+                        this.stateFlags &= ~(STATE_JUMPING | STATE_FALLING); // Grounded
+                        updateBounds();
+                    }
+                }
+
+                // Head collision (ceiling).
+                if (this.boundsTop.intersects(tempObject.bounds)) {
+                    this.y = tempObject.y + tempObject.height;
+                    this.velY = 0;
                     updateBounds();
                 }
             }
