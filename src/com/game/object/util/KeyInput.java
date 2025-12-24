@@ -16,10 +16,6 @@ public class KeyInput extends KeyAdapter {
 
     public KeyInput(Handler handler) {
         this.handler = handler;
-        keyDown[0] = false;
-        keyDown[1] = false;
-        keyDown[2] = false;
-        keyDown[3] = false;
     }
 
     @Override
@@ -31,20 +27,12 @@ public class KeyInput extends KeyAdapter {
         if (player == null) return;
 
         if (key == KeyEvent.VK_W || key == KeyEvent.VK_UP) {
-            /* Robust logic:
-             * Only jump if we are NOT already jumping (prevents double jumps)
-             * and if we are NOT falling (prevents mid-air jumps if falling off a ledge) */
-            // Optimization: Single check replaces multiple boolean getters.
-            // "If state is 0 (0000), it means we are strictly on the ground"
-            if (player.isGrounded()) {
-                player.setJumping(true);
-                player.setVelY(-8);
-                keyDown[0] = true;
-            }
+            player.jump();
+            keyDown[0] = true;
         }
 
         if (key == KeyEvent.VK_A || key == KeyEvent.VK_LEFT) {
-            player.setVelX(-5);
+            player.setVelXByDirection(-1);
             keyDown[1] = true;
         }
 
@@ -55,7 +43,7 @@ public class KeyInput extends KeyAdapter {
         }
 
         if (key == KeyEvent.VK_D || key == KeyEvent.VK_RIGHT) {
-            player.setVelX(5);
+            player.setVelXByDirection(1);
             keyDown[3] = true;
         }
     }
@@ -63,7 +51,6 @@ public class KeyInput extends KeyAdapter {
     @Override
     public void keyReleased(KeyEvent e) {
         int key = e.getKeyCode();
-
         Player player = this.handler.getPlayer();
 
         if (player == null) return;
@@ -74,7 +61,7 @@ public class KeyInput extends KeyAdapter {
              * If the player releases the jump button while still moving up,
              * we cut the upward velocity significantly to create a "short hop". */
             if (player.getVelY() < 0) {
-                player.setVelY(player.getVelY() / 2);
+                player.setVelY(player.getVelY() * 0.5f);
             }
         }
 
@@ -83,10 +70,10 @@ public class KeyInput extends KeyAdapter {
             // Logic: If we release 'Left', but 'Right' is still held down,
             // we should start moving Right instantly instead of stopping.
             if (keyDown[3]) {
-                player.setVelX(5);
+                player.setVelXByDirection(1);
             }
             else {
-                player.setVelX(0);
+                player.setVelXByDirection(0);
             }
         }
 
@@ -96,10 +83,10 @@ public class KeyInput extends KeyAdapter {
             keyDown[3] = false;
             // Logic: If we release 'Right', but 'Left' is still held down, move left.
             if (keyDown[1]) {
-                player.setVelX(-5);
+                player.setVelXByDirection(-1);
             }
             else {
-                player.setVelX(0);
+                player.setVelXByDirection(0);
             }
         }
     }

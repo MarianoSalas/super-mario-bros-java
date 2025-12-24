@@ -10,7 +10,7 @@ public abstract class GameObject {
     protected ObjectID id;
     protected float velX, velY;
     protected float width, height;
-    protected int scale;
+    protected final int scale;
 
     // OPTIMIZATION: We create the rectangle ONCE in memory.
     protected final Rectangle bounds;
@@ -37,30 +37,18 @@ public abstract class GameObject {
     public void applyGravity(float gravity) { this.velY += gravity; }
 
     public void setX(float x) { this.x = x; }
-
     public void setY(float y) { this.y = y; }
-
     public void setID(ObjectID id) { this.id = id; }
-
     public void setVelX(float velX) { this.velX = velX; }
-
     public void setVelY(float velY) { this.velY = velY; }
-
     public void setWidth(float width) { this.width = width; }
-
     public void setHeight(float height) { this.height = height; }
 
     public float getX() { return this.x; }
-
     public float getY() { return y; }
-
     public ObjectID getID() { return this.id; }
-
     public float getVelX() { return this.velX; }
-
     public float getVelY() { return this.velY; }
-
     public float getWidth() { return this.width; }
-
     public float getHeight() { return this.height; }
 }

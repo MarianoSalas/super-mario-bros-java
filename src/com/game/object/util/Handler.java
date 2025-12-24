@@ -44,7 +44,7 @@ public class Handler {
     public void addObject(GameObject obj) {
         this.gameObjects.add(obj);
 
-        // CORRECCIÓN: Si el objeto es un Player, guardamos la referencia rápida.
+        // CORRECTION: If the object is the Player, store the quick reference.
         if (obj.getID() == ObjectID.PLAYER) {
             this.player = (Player) obj;
         }
@@ -61,36 +61,6 @@ public class Handler {
     }
 
     public List<GameObject> getGameObjects() { return this.gameObjects; }
-
-    public boolean setPlayer(Player player) {
-        boolean toReturn;
-
-        if (this.player != null) {
-            toReturn = false;
-        }
-        else {
-            addObject(player);
-            this.player = player;
-            toReturn = true;
-        }
-
-        return toReturn;
-    }
-
-    public boolean removePlayer() {
-         boolean toReturn;
-
-        if (this.player == null) {
-            toReturn = false;
-        }
-        else {
-            removeObject(this.player);
-            this.player = null;
-            toReturn = true;
-        }
-        return toReturn;
-    }
-
     public Player getPlayer() {
         return this.player;
     }

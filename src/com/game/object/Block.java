@@ -13,12 +13,12 @@ public class Block extends GameObject {
 
         // Optimization: Since standard blocks don't move, we calculate the hitbox once.
         // This avoids redundant calculations every tick.
-        this.bounds.setBounds((int) x, (int) y, (int) width * scale, (int) height * scale);
+        this.bounds.setBounds((int) x, (int) y, (int) this.width, (int) this.height);
     }
 
     @Override
     public void tick() {
-
+        // Static object.
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.game.object;
 
+import com.game.graphics.Camera;
 import com.game.object.util.Handler;
 import com.game.object.util.ObjectID;
 
@@ -11,10 +12,16 @@ import java.util.List;
 
 public class Player extends GameObject {
 
+    /* ----------------CONSTANTS---------------- */
     private static final float PLAYER_WIDTH = 16;
     private static final float PLAYER_HEIGHT = 32;
     private static final int WIDTH_OFFSET = 5;
     private static final int HEIGHT_OFFSET = 10;
+
+    private static final float GRAVITY = 0.3f;
+    private static final float MAX_FALL_SPEED = 10f; // Avoid passing through floors.
+    private static final float JUMP_FORCE = -8f;
+    private static final float MOVEMENT_SPEED = 5f;
 
     // Bit flags definitions (powers of 2).
     private static final int STATE_JUMPING = 1; // Binary: 0001
@@ -26,7 +33,9 @@ public class Player extends GameObject {
     private static final boolean DEBUG_BOUNDS = true;
 
     private final Handler handler;
+    private Camera camera;
 
+    /* -------------SENSORS------------- */
     private final Rectangle boundsTop;
     private final Rectangle boundsLeft;
     private final Rectangle boundsRight;
@@ -44,10 +53,18 @@ public class Player extends GameObject {
         this.x += this.velX;
         collisionX();
 
-        this.y += this.velY;
-        applyGravity(0.3f);
-        collisionY();
+        if (this.camera != null) {
+            if (this.x < this.camera.getX()) {
+                this.x = this.camera.getX();
+                if (this.velX < 0) { this.velX = 0; }
+                updateBounds();
+            }
+        }
 
+        this.y += this.velY;
+        this.velY += GRAVITY;
+        if (this.velY > MAX_FALL_SPEED) { this.velY = MAX_FALL_SPEED; }
+        collisionY();
         updateBounds();
     }
 
@@ -111,7 +128,7 @@ public class Player extends GameObject {
      * This allows checking 2 (or more) states in a SINGLE CPU instruction. */
     public boolean isGrounded() {
         // We check if both bits (1 and 2) are 0.
-        return (stateFlags & (STATE_JUMPING | STATE_FALLING)) == 0;
+        return (this.stateFlags & (STATE_JUMPING | STATE_FALLING)) == 0;
     }
 
     private void collisionX() {
@@ -171,4 +188,21 @@ public class Player extends GameObject {
             }
         }
     }
+    public void setVelXByDirection(int direction) {
+        // direction: -1 (left), 0 (stop), 1 (right)
+        this.velX = direction * MOVEMENT_SPEED;
+    }
+
+    public void jump() {
+        /* Robust logic:
+         * Only jump if we are NOT already jumping (prevents double jumps)
+         * and if we are NOT falling (prevents mid-air jumps if falling off a ledge) */
+        /* Optimization: Single check replaces multiple boolean getters.
+         * "If state is 0 (0000), it means we are strictly on the ground" */
+        if  ((this.stateFlags & (STATE_JUMPING | STATE_FALLING)) == 0) {
+            this.velY = JUMP_FORCE;
+            setJumping(true);
+        }
+    }
+    public void setCamera(Camera camera) { this.camera = camera; }
 }

@@ -36,6 +36,7 @@ public class Window {
                 System.out.println("Window is closing. Performing shutdown tasks...");
                 shutdownHandler.onShutdown(); // Stop game thread
                 frame.dispose(); // Kill window
+                System.exit(0); // Ensure the JVM terminates completely
             }
         });
     }
