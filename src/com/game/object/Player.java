@@ -1,20 +1,24 @@
 package com.game.object;
 
+import com.game.graphics.Animation;
+import com.game.graphics.Assets;
 import com.game.graphics.Camera;
 import com.game.object.util.Handler;
 import com.game.object.util.ObjectID;
 
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Graphics2D;
+
 import java.util.List;
 
 public class Player extends GameObject {
 
     /* ----------------CONSTANTS---------------- */
     private static final float PLAYER_WIDTH = 16;
-    private static final float PLAYER_HEIGHT = 32;
+    private static final float PLAYER_HEIGHT = 16;
     private static final int WIDTH_OFFSET = 5;
     private static final int HEIGHT_OFFSET = 10;
 
@@ -23,6 +27,13 @@ public class Player extends GameObject {
     private static final float JUMP_FORCE = -8f;
     private static final float MOVEMENT_SPEED = 5f;
 
+    // --- ANIMATIONS & DIRECTION ---
+    private final Animation animLeft;
+    private final Animation animRight; // Actually we reuse sprites, but logic helps
+    private final Animation animIdle;
+    private final Animation animJump;
+    private int facing = 1;
+
     // Bit flags definitions (powers of 2).
     private static final int STATE_JUMPING = 1; // Binary: 0001
     private static final int STATE_FALLING = 2; // Binary: 0010
@@ -30,7 +41,7 @@ public class Player extends GameObject {
     // Single integer to hold all boolean states using bitwise operations.
     private int stateFlags = 0;
 
-    private static final boolean DEBUG_BOUNDS = true;
+    private static final boolean DEBUG_BOUNDS = false;
 
     private final Handler handler;
     private Camera camera;
@@ -43,6 +54,16 @@ public class Player extends GameObject {
     public Player(float x, float y, int scale, Handler handler) {
         super(x, y, ObjectID.PLAYER, PLAYER_WIDTH, PLAYER_HEIGHT, scale);
         this.handler = handler;
+
+        // Initialize Animations
+        // Speed 10 is a good balance. Lower number = Faster animation.
+        this.animRight = new Animation(10, Assets.player_small_run);
+        this.animIdle = new Animation(10, Assets.player_small_idle);
+        this.animJump = new Animation(10, Assets.player_small_jump);
+        // We don't need a separate "Left" animation if we flip the image in render.
+        // But we store the reference for logic if needed.
+        this.animLeft = new Animation(10, Assets.player_small_run);
+
         this.boundsTop = new Rectangle(0, 0, 0, 0);
         this.boundsLeft = new Rectangle(0, 0, 0, 0);
         this.boundsRight = new Rectangle(0, 0, 0, 0);
@@ -66,14 +87,53 @@ public class Player extends GameObject {
         if (this.velY > MAX_FALL_SPEED) { this.velY = MAX_FALL_SPEED; }
         collisionY();
         updateBounds();
+
+        /* -----Animation Logic----- */
+        // Run animation only when moving.
+        if (this.velX != 0) {
+            this.animRight.runAnimation();
+            this.animLeft.runAnimation();
+            this.animIdle.runAnimation(); // Keep idle in sync or pause it, doesn't matter much.
+            this.animJump.runAnimation();
+        }
+
+        // Direction logic
+        if (this.velX > 0) facing = 1;
+        else if (this.velX < 0) facing = -1;
+
+        updateBounds();
     }
 
     @Override
     public void render(Graphics g) {
-        // Debug: Drawing a simple colored rectangle to visualize the player.
-        // Once we have sprites/textures, this will be replaced.
-        g.setColor(Color.BLUE);
-        g.fillRect((int)x, (int)y, (int)width, (int)height);
+        /* ------TEXTURE SELECTION------ */
+        BufferedImage texture = null;
+        // Priority 1: Jumping/Falling (Airborne)
+        if ((this.stateFlags & (STATE_JUMPING | STATE_FALLING)) != 0) {
+            texture = Assets.player_small_jump[0];
+        }
+        // Priority 2: Running (Moving on X)
+        else if (this.velX != 0) {
+            texture = this.animRight.getCurrentFrame();
+        }
+        // Priority 3: Idle (Standing still)
+        else {
+            texture = Assets.player_small_idle[0]; // Or animIdle.getCurrentFrame() if idle breathes
+        }
+
+        // --- DRAWING WITH FLIP ---
+        // Efficient flipping without creating new textures in memory:
+        // If facing Right (1): Draw normally.
+        // If facing Left (-1): Draw from x+width to x (inverted width).
+
+        if (facing == 1) {
+            g.drawImage(texture, (int)x, (int)y, (int)width, (int)height, null);
+        } else {
+            // Magic Trick: Negative width flips the image in drawImage
+            g.drawImage(texture, (int)x + (int)width, (int)y, -(int)width, (int)height, null);
+        }
+
+        // Debug bounds (Keep this until everything works perfectly)
         if (DEBUG_BOUNDS) { showBounds(g); }
     }
 

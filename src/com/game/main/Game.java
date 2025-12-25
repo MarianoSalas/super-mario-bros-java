@@ -1,6 +1,7 @@
 package com.game.main;
 
 import com.game.core.ShutdownHandler;
+import com.game.graphics.Assets;
 import com.game.graphics.Camera;
 import com.game.graphics.Window;
 import com.game.object.Block;
@@ -48,7 +49,8 @@ public class Game extends Canvas implements Runnable, ShutdownHandler {
 
         // Setup Input
         this.addKeyListener(new KeyInput(this.handler));
-
+        // Load resources before using them
+        Assets.init();
         // Initialize Level
         initLevel();
     }
